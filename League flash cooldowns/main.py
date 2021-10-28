@@ -57,7 +57,7 @@ def main():
 
 	listener = keyboard.Listener(on_press=on_press)
 	listener.start()
-	while listener.join(): pass
+	listener.join()
 	
 
 if __name__ == "__main__":
