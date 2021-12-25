@@ -9,8 +9,8 @@ PLAYER1_CAPTURE_PIT = BOARD_LEN//2
 PLAYER2_CAPTURE_PIT = 0
 PLAYER1 = False
 PLAYER2 = True
-CAPTURE_MAP = [None] + [i + BOARD_LEN//2 + 1 for i in range(SIDE_LEN)] +\
-			  [None] + [i + 1 for i in range(SIDE_LEN)]
+CAPTURE_MAP = [None] + list(range(BOARD_LEN-1, SIDE_LEN+1, -1)) +\
+			  [None] + list(range(SIDE_LEN, 0, -1))
 
 @dataclass
 class Board:
@@ -23,8 +23,8 @@ class Board:
 		s1 = self.board[:len(self.board)//2]
 		s2 = self.board[len(self.board)//2:]
 		out = ""
-		out += f"P1: {s2[0]} {s1[1:]} \n"
-		out += f"P2: {s1[0]} {s2[1:]} \n"
+		out += f"P2: {s1[0]} {(s2[1:])[::-1]} \n"
+		out += f"P1: {s1[1:]} {s2[0]} \n"
 		out += f"Turn: {'Player 1' if self.turn == PLAYER1 else 'Player 2'}"
 		return out
 	live = lambda self : sum(self.board[1:len(self.board)//2]) and sum(self.board[1+len(self.board)//2:])
