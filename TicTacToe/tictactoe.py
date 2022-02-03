@@ -79,7 +79,7 @@ def optimalMove(board):
 		generateNextMove(board)
 	return moveCache[board]
 	
-# valid moves 0-9
+# valid moves 0-8
 def playMove(board : int, move : int):
 	move = (1 << move)
 	if board & TURN: move <<= 9
