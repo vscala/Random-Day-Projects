@@ -33,7 +33,7 @@ def checkWinner(board):
 		return 0 if ((board & TURN) >> 18) else 1
 	return None
 
-def p(board):
+def printBoard(board):
 	for i in range(9):
 		if board & (1 << i):
 			print("X", end="\t")
@@ -95,4 +95,4 @@ if __name__ == "__main__":
 			board = playMove(board, move)
 		else:
 			board = optimalMove(board)[0]
-		p(board)
+		printBoard(board)
