@@ -1,6 +1,6 @@
 import requests
 
-def skipSong(token):
+def skipSong(token) -> None:
 	headers = {
 		'Accept': 'application/json',
 		'Content-Type': 'application/json',
@@ -8,25 +8,23 @@ def skipSong(token):
 	}
 	
 	response = requests.post(
-		"https://api.spotify.com/v1/me/player/next", headers=headers
+		"https://api.spotify.com/v1/me/player/next", 
+		headers=headers
 	)
 
-def getCurrentSong(token):
+def getCurrentSong(token) -> dict:
 	headers = {
 		'Accept': 'application/json',
 		'Content-Type': 'application/json',
 		'Authorization': f'Bearer {token}',
 	}
-
-	params = (
-		('market', 'ES'),
-		('additional_types', 'episode'),
+	
+	response = requests.get(
+		'https://api.spotify.com/v1/me/player/currently-playing', 
+		headers=headers
 	)
-	response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', \
-							headers=headers, params=params)
-	if response: response_json = response.json()
-	else: return {}
-	return response_json
+	
+	return response.json() if response else {}
 
 if __name__ == "__main__":
 	from time import sleep
@@ -45,5 +43,7 @@ if __name__ == "__main__":
 				print(f"[{song['item']['name']}] is a remix, skipping")
 				skipSong(token)
 		except TypeError:
+			pass
+		except KeyError:
 			pass
 		sleep(1)
