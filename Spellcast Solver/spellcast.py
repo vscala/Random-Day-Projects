@@ -3,7 +3,18 @@
 from collections import defaultdict, Counter
 from itertools import chain
 
+letter_values = [1, 4, 5, 3, 1, 5, 3, 4, 1, 7, 3, 3, 4, 2, 1, 4, 8, 2, 2, 2, 4, 5, 5, 7, 4, 8] 
+charset = set('abcdefghijklmnopqrstuvwxyz')
+value = lambda word : sum(letter_values[ord(c.lower()) - ord('a')] for c in word if c.lower() in charset)
+
 class WordBoard:
+	def __init__(self):
+		with open('words.txt') as f:
+			self.words = [word[:-1] for word in f.readlines()]
+		self.word_values = [(value(word), word) for word in self.words]
+		self.word_values.sort(reverse=True)
+		
+		
 	def setBoard(self, board):
 		self.board = board
 		self.n = len(board)
@@ -15,18 +26,26 @@ class WordBoard:
 		for c in wCount:
 			if wCount[c] > self.totalCount[c]: return False
 		return True
-		
-	def boardContains(self, word, skips=0) -> bool:
+	
+	'''
+		word: the word to check if the board contains
+		skips: the number of letters in the word that can be skipped (TODO)
+		x, y: the position of a letter that must be included (None if no such letter exsist)
+	'''
+	def boardContains(self, word, skips=0, x=None, y=None) -> bool:
 		n, m = self.n, self.m
 		if not skips and not self.precheck(word):
 			return False
-		# TODO precheck with skips
+		self.hitXY = (x == None)
+		self.skips = skips
 		
-		def backtrack(i, j, letters, skips=0):
+		def backtrack(i, j, letters):
 			if not letters: return True
 			if self.board[i][j] != letters[0]: 
-				if skips and board[i][j] != '.': skips -= 1
+				if self.skips and board[i][j] != '.': self.skips -= 1
 				else: return False
+			if i == x and j == y:
+				self.hitXY = True
 			
 			temp, self.board[i][j] = self.board[i][j], "."
 			out = False
@@ -46,8 +65,15 @@ class WordBoard:
 				out = out or backtrack(i, j+1, letters[1:]) 		# 0, +1
 			if j > 0: 
 				out = out or backtrack(i, j-1, letters[1:])		# 0, -1
+			out = out and self.hitXY
+			
+			# reset board values
 			self.board[i][j] = temp
-			return out	
+			if self.board[i][j] != letters[0]: 
+				self.skips += 1
+			if i == x and j == y:
+				self.hitXY = False
+			return out
 	   	
 		#Iterate over board
 		for i in range(n):
@@ -56,19 +82,12 @@ class WordBoard:
 				if board[i][j] == word[0]:
 					if backtrack(i, j, word):
 						return True   
+	
+	def generateWords(self, skips=0, x=None, y=None):
+		for value, word in self.word_values:
+			if self.boardContains(word, skips, x, y):
+				yield (word, value)
 
-# Read words
-with open('words.txt') as f:
-	words = [word[:-1] for word in f.readlines()]
-
-# Spellcast letter values / charset
-letter_values = [1, 4, 5, 3, 1, 5, 3, 4, 1, 7, 3, 3, 4, 2, 1, 4, 8, 2, 2, 2, 4, 5, 5, 7, 4, 8] 
-charset = set('abcdefghijklmnopqrstuvwxyz')
-
-# map words to their values
-value = lambda word : sum(letter_values[ord(c.lower()) - ord('a')] for c in word if c.lower() in charset)
-word_values = [(value(word), word) for word in words]
-word_values.sort(reverse=True)
 
 # Read board and create wordboard
 board = [[c.lower() for c in input()] for _ in range(5)]
@@ -76,10 +95,13 @@ wb = WordBoard()
 wb.setBoard(board)
 
 # Find best word(s)
-for value, word in word_values:
-	if wb.boardContains(word):
-		print(word, value)
-		query = input()
-		if query != "":
-			break
+wg = wb.generateWords()
+wgS1 = wb.generateWords(1)
+wgS2 = wb.generateWords(2)
+x, y = map(int, input().split())
+wgXY = wb.generateWords(x=x, y=y)
+
+print(next(wg), next(wgS1), next(wgS2), next(wgXY))
+
+
 
